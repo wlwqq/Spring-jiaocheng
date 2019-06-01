@@ -18,7 +18,7 @@ MVC 和持久层 Spring JDBC 以及业务层事务管理等众多的企业级应
 
 ### 1.2 spring的结构图
 
-![](https://github.com/wlwqq/Spring-.git/raw/master/images/1.png)
+![](https://github.com/wlwqq/Spring-/raw/master/images/1.png)
 
 对图片做一个解释，从下往上看
 
