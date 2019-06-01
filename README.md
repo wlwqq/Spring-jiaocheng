@@ -4,7 +4,7 @@
 
 声明：这一套教程为现在火热的javaEE框架Spring的教程，其中Spring版本为5.x，教程所用的开发工具为IDEA2018版本，代码实例都会上传到github仓库，喜欢的可以star一下。
 
-## 1.spring概述
+## 1.Spring概述
 
 ### 1.1 spring的简介
 
@@ -126,7 +126,7 @@ MVC 和持久层 Spring JDBC 以及业务层事务管理等众多的企业级应
 
 顾名思义，必须这个类中有构造函数才可以用
 
-**constructor**标签用来注入数据，有2类属性，第一类：index、type、name、第二类：value、ref、
+**constructor-arg**标签用来注入数据，有2类属性，第一类：index、type、name、第二类：value、ref、
 
 第一类用来找谁赋值
 
@@ -169,6 +169,232 @@ public static void main(String[] args) {
 
 至此Spring的IOC和DI的xml配置版本就完成了
 
-### 2.3 IDEA实现IOC和DI（注解版）
+### 2.3 IDEA实现IOC和DI（注解版，代码在springiocAnnotation中）
+
+上面对于springIOC和DI的xml配置也可以完全使用注解来代替，注解和xml只是两种不同的形式而已，但是他们的功能是完全一样的。
+
+那么如何学习springIOC的注解呢？首先要清楚Spring的IOC在干两件事，第一，把对象注入到容器中；第二，给对象注入依赖。在xml中**bean**标签表示把对象注入到容器中；**constract-arg**和**property**表示将依赖注入到对象中，一个是利用构造函数，一个是利用set方法。
+
+那么注解版也一样咯，肯定有某个注解将对象注入到容器中，又有某个注解将依赖注入。下面带着这样的思路配置springIOC的注解版
+
+**（1）创建项目导入maven依赖**
+
+```xml
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+    </dependencies>
+```
+
+**（2）书写service层和dao层**
+
+在本仓库中查看springiocAnnotation项目，程序运行的逻辑与之前一样，service调用dao。
+
+**（3）调整bean.xml**
+
+第一：导入context命名空间
+
+```xml
+xmlns:context="http://www.springframework.org/schema/context"
+```
+
+第二：开启注解扫描功能
+
+```xml
+<context:component-scan base-package="com.wanglei"></context:component-scan>
+```
+
+**（4）使用注解**
+
+开头分析过，无非是两种注解，一个注入对象的，一个依赖注入的，这里先看第一个
+
+**@Component**
+
+```java
+@Component(value = "accountService")
+public class AccountServiceImpl implements AccountService {
+```
+
+表示把这个类产生的对象放到容器中，value=“accountService”表示这个对象的id是accountService
+
+,还有三个衍生的注解：**@Controller、@Service、@Repository**：意思很明显，三层对应的对象，这三个只是给看的，其实没什么区别。那么我们的项目就应该这样注解了
+
+```java
+@Service(value = "accountService")
+public class AccountServiceImpl implements AccountService {
+
+@Repository(value = "accountDao")
+public class AccountDaoimpl implements AccountDao {
+```
+
+关于依赖注入的种类较多，这里先分析再解释，一个对象中也许有基本属性，比如name、age等，也许有对象树属性，比如这个例子的service中有dao对象，那么属性的类型不同，注入方式就不一样
+
+**@Value**
+
+用来给基本属性注入的，value=“王磊”表示给这个属性注入王磊
+
+**@Autowired、@Qualifier、@Resource**
+
+这三个分别用来注入对象的，用法如下
+
+```java
+@Autowired
+private AccountDao accountDao;
+    
+@Autowired
+@Qualifier(value = "accountDao")
+private AccountDao accountDao;
+
+@Resource(name = "accountDao")
+private AccountDao accountDao;
+```
+
+解释一下，@Autowired表示根据类型自动注入、@Qualifier表示在@Autowired基础上根据对象id注入、@Resource表示根据对象id注入。
+
+**@Scope**
+
+改变作用范围，使用如下：
+
+```java
+@Service(value = "accountService")
+@Scope(value = "singleton")
+public class AccountServiceImpl implements AccountService {
+```
+
+**（5）彻底告别bean.xml文件**
+
+**@Configuration**
+
+这个注解标记在一个类上，表示这个类是一个bean.xml的替身，有了这个注解，就可以删除bean.xml文件了
+
+```java
+@Configuration
+public class SpringConfiguration {
+```
+
+**@ComponentScan**
+
+这个注解与bean.xml中<context:component-scan base-package="com.wanglei">意思相同
+
+用法如下
+
+```java
+@Configuration
+@ComponentScan(value = "com.wanglei")
+public class SpringConfiguration {
+```
+
+**@Bean**
+
+写在方法上，表示将这个方法的返回值注入到容器中，这里写一个新的配置类，就是关于jdbc的配置类，当我们的dao需要一个QueryRunner，而QueryRunner需要一个连接池的时候，依赖关系就变成了这样：service调用dao，dao调用QueryRunner，QueryRunner调用c3p0连接池。
+
+（1）导入maven设置如下
+
+```xml
+        <dependency>
+            <groupId>commons-dbutils</groupId>
+            <artifactId>commons-dbutils</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.47</version>
+        </dependency>
+
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.1.2</version>
+        </dependency>
+```
+
+（2）@Bean注入QueryRunner
+
+```java
+    @Bean(name = "queryRunner")
+    @Scope(value = "prototype")
+    public QueryRunner getQueryRunner(DataSource dataSource){
+        return new QueryRunner(dataSource);
+    }
+
+```
+
+（3）@PropertySource("classpath:jdbcConfig.properties")和@Bean注入datasource，因为QueryRunner需要它
+
+**@PropertySource("classpath:jdbcConfig.properties")**
+
+表示引入jdbcConfig.properties文件进来可以i读取属性
+
+```java
+    @Value("${jdbc.driver}")
+    String driver;
+    @Value("${jdbc.username}")
+    String username;
+    @Value("${jdbc.url}")
+    String url;
+    @Value("${jdbc.password}")
+    String password;
+
+    @Bean(name = "queryRunner")
+    @Scope(value = "prototype")
+    public QueryRunner getQueryRunner(@Autowired DataSource dataSource){
+        return new QueryRunner(dataSource);
+    }
+
+    @Bean(name = "dataSource")
+    public DataSource getDataSource(){
+        try {
+            ComboPooledDataSource ds = new ComboPooledDataSource();
+            ds.setDriverClass(driver);
+            ds.setJdbcUrl(url);
+            ds.setUser(username);
+            ds.setPassword(password);
+            return ds;
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+```
+
+**@Import**
+
+导入其他配置类到主配置类，用法如下
+
+```java
+@Configuration
+@ComponentScan(value = "com.wanglei")
+@PropertySource("classpath:jdbcConfig.properties")
+@Import(JdbcConfiguration.class)
+public class SpringConfiguration {
+
+}
+
+```
+
+（6）测试我们的注解版IOC
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        //1.获取核心容器
+        ApplicationContext ioc = new AnnotationConfigApplicationContext(SpringConfiguration.class);
+        //2.获取accountService对象
+        AccountService accountService = (AccountService) ioc.getBean("accountService");
+        //3.调用findAccount()方法
+        accountService.findAccount();
+    }
+}
+```
+
+![](D:\githubinbendi\spring\images\5.png)
+
+
+
+## 3.Spring中的单元测试
 
 未完待续
