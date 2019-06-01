@@ -46,9 +46,9 @@ MVC 和持久层 Spring JDBC 以及业务层事务管理等众多的企业级应
 
 总结：Spring的**IOC**就是一个容器，这个容器是key-value形式的，就是一个map，我们需要对象的时候就用key从IOC容器中拿对象，对象在创建过程中，属性的声明就叫依赖注入。下面两张图就更加形象了，第二张图中的**工厂**就相当于Spring中的IOC容器。不多说了，这应该是最简单易懂的IOC和DI的介绍了。
 
-![](D:\githubinbendi\spring\images\2.png)
+![](https://github.com/wlwqq/Spring-/raw/master/images/2.png)
 
-![](D:\githubinbendi\spring\images\3.png)
+![](https://github.com/wlwqq/Spring-/raw/master/images/3.png)
 
 ### 2.2 IDEA实现IOC和DI（xml版本代码在springIOCxml中）
 
@@ -165,7 +165,7 @@ public static void main(String[] args) {
 
 效果如下
 
-![](D:\githubinbendi\spring\images\4.png)
+![](https://github.com/wlwqq/Spring-/raw/master/images/4.png)
 
 至此Spring的IOC和DI的xml配置版本就完成了
 
@@ -391,7 +391,7 @@ public class Main {
 }
 ```
 
-![](D:\githubinbendi\spring\images\5.png)
+![](https://github.com/wlwqq/Spring-/raw/master/images/5.png)
 
 
 
