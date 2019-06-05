@@ -397,4 +397,64 @@ public class Main {
 
 ## 3.Spring中的单元测试
 
+在上面的两个项目中关于IOC容器的测试我都是采用直接写主函数测试，这样不是特别科学，真正科学正确的方式应该是在web阶段接触到的junit测试，但是spring中的junit测试有点不同，在spring中使用junit的过程如下：分别在springIOCxml项目和springiocAnnotation项目中演示。
+
+### 3.1 导入junit相关的maven依赖
+
+```xml
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+```
+
+### 3.2 新建测试类AccountTest.java
+
+在test包下新建AccountTest.java
+
+### 3.3@RunWith注解和@ContextConfiguration
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = "classpath:bean.xml")
+public class AccountTest {
+
+}
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SpringConfiguration.class)
+public class AccountTest {
+}
+```
+
+### 3.4编写测试方法测试
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = SpringConfiguration.class)
+public class AccountTest {
+
+    @Autowired
+    private AccountService accountService;
+
+    @Test
+    public void test1(){
+        accountService.findAccount();
+    }
+}
+```
+
+### 3.5总结
+
+之所以要spring整合junit测试，只有一个目的，在写测试方法的时候不需要写获取核心容器，从核心容器中获取对象这两行代码了，其他的没什么区别。
+
+## 4.Spring中的AOP
+
 未完待续
+
