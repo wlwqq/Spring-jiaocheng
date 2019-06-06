@@ -531,7 +531,7 @@ public class Main {
 }
 ```
 
-![](D:\githubinbendi\spring\images\6.png)
+![](https://github.com/wlwqq/Spring-jiaocheng/raw/master/images/6.png)
 
 **（5）Advice类型**
 
@@ -554,7 +554,7 @@ public class Main {
 </aop:config>
 ```
 
-![](D:\githubinbendi\spring\images\7.png)
+![](https://github.com/wlwqq/Spring-jiaocheng/raw/master/images/7.png)
 
 ### 4.3 IDEA实现AOP（注解版，项目SpringAOPAnnotation）
 
