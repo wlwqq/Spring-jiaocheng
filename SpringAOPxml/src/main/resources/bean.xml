@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="accountService" class="com.wanglei.service.impl.AccountServiceImpl"></bean>
+    <bean id="log" class="com.wanglei.utils.Logger"></bean>
+
+    <!--<aop:config>-->
+        <!--<aop:aspect id="LogAdvice" ref="log">-->
+            <!--<aop:before method="printLog" pointcut="execution(* com.wanglei.service.impl.*.*(..))" ></aop:before>-->
+        <!--</aop:aspect>-->
+    <!--</aop:config>-->
+    
+    <aop:config>
+        <aop:pointcut id="accountServicePoint" expression="execution(* com.wanglei.service.impl.*.*(..))"></aop:pointcut>
+        <aop:aspect id="logAdvice" ref="log">
+            <!--前置通知-->
+            <aop:before method="printLog1" pointcut-ref="accountServicePoint"></aop:before>
+            <!--后置通知-->
+            <aop:after-returning method="printLog2" pointcut-ref="accountServicePoint"></aop:after-returning>
+            <!--异常通知-->
+            <aop:after-throwing method="printLog3" pointcut-ref="accountServicePoint"></aop:after-throwing>
+            <!--最终通知-->
+            <aop:after method="printLog4" pointcut-ref="accountServicePoint"></aop:after>
+
+        </aop:aspect>
+    </aop:config>
+
+</beans>

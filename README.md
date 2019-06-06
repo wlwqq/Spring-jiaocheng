@@ -456,5 +456,194 @@ public class AccountTest {
 
 ## 4.Spring中的AOP
 
-未完待续
+Spring中的AOP是Spring的第二大特性，AOP（面向切面编程），什么叫做面向切面编程呢？打比方说，为什么要打比方？。。。。。。我们的项目中有许多方法，当我需要在每个方法执行的时候打印一下日志该怎么办？最简单的方式就是在每个方法内部写上打印日志的代码，这也就意味着所有的方法我们都要写重复的代码，并且有一天我需要改代码的时候所有的都要改，麻烦而且不符合软件工程设计模式的规范。
 
+所以引入了AOP编程。
+
+### 4.1 SpringAOP的相关概念
+
+以上面的需求为例，给每个方法添加日志
+
+**连接点（JointPoint）**：指的是项目中的所有方法，我们可以为每一个方法都加上写日志的代码，所以每一个候选者都是连接点
+
+**切入点（pointcut）**：那我们肯定不是每个方法都要加日志，那些需要处理的**连接点**我们称作**切入点**
+
+**通知（Advice）**：写日志的代码就叫做通知，意思就是具体增强的那部分代码
+
+**切面（Aspect）**：**切入点**+**通知**=**切面**
+
+那么AOP面向切面编程的概念就呼之欲出了，把通知写到切入点里面去这样的过程就叫AOP，而通知+切入点=切面，所以又叫做面向切面编程。
+
+### 4.2 IDEA实现AOP（xml版本，代码为SpringAOPxml项目）
+
+**（1）创建maven项目，导入依赖**
+
+```xml
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.13</version>
+        </dependency>
+    </dependencies>
+```
+
+**（2）写Service代码（切入点）和通知代码Logger**
+
+具体查看仓库SpringAOPxml项目，明确我们的目的，当AccountService中的方法执行，就要打印日志，意思就是把Logger中的方法搞到AccountService中，怎么搞呢？往下看
+
+**（3）基于xml配置AOP**
+
+之前的IOC配置也是需要的呦，回顾之前的介绍AOP是什么？切入点+通知对吧，其实也就是切面+通知，那么AOP的配置也就是2点：切面+通知
+
+```xml
+<!--配置ioc-->
+<bean id="accountService" class="com.wanglei.service.impl.AccountServiceImpl"></bean>
+<bean id="log" class="com.wanglei.utils.Logger"></bean>
+<!--配置AOP-->
+<aop:config>
+    <aop:aspect id="LogAdvice" ref="log">
+        <aop:before method="printLog" pointcut="execution(* com.wanglei.service.impl.*.*						(..))" >
+        </aop:before>
+    </aop:aspect>
+</aop:config>
+```
+
+
+
+**（4）测试**
+
+直接写主方法测试了
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        ApplicationContext ac = new ClassPathXmlApplicationContext("bean.xml");
+        AccountService as = (AccountService) ac.getBean("accountService");
+        as.saveAcoount();
+    }
+}
+```
+
+![](D:\githubinbendi\spring\images\6.png)
+
+**（5）Advice类型**
+
+上面的例子都是在方法执行之前执行，如果需要在方法执行其他时间执行怎么办呢
+
+```xml
+<aop:config>
+        <aop:pointcut id="accountServicePoint" expression="execution(* com.wanglei.service.impl.*.*(..))"></aop:pointcut>
+        <aop:aspect id="logAdvice" ref="log">
+            <!--前置通知-->
+            <aop:before method="printLog1" pointcut-ref="accountServicePoint"></aop:before>
+            <!--后置通知-->
+            <aop:after-returning method="printLog2" pointcut-ref="accountServicePoint"></aop:after-returning>
+            <!--异常通知-->
+            <aop:after-throwing method="printLog3" pointcut-ref="accountServicePoint"></aop:after-throwing>
+            <!--最终通知-->
+            <aop:after method="printLog4" pointcut-ref="accountServicePoint"></aop:after>
+
+        </aop:aspect>
+</aop:config>
+```
+
+![](D:\githubinbendi\spring\images\7.png)
+
+### 4.3 IDEA实现AOP（注解版，项目SpringAOPAnnotation）
+
+**（1）新建maven项目，导入依赖**
+
+```xml
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>5.1.5.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.8.13</version>
+        </dependency>
+    </dependencies>
+```
+
+**（2）写Service和Advice代码**
+
+具体查看仓库SpringAOPannotation项目
+
+**（3）基于注解配置SpringAOP**
+
+xml配置时注意切面和通知，那么注解配置也是解决这两个问题
+
+bean.xml中配置如下
+
+```xml
+    <!--IOC注解扫描-->
+    <context:component-scan base-package="com.wanglei"></context:component-scan>
+    <!--AOP注解扫描-->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+```
+
+加上IOC的注解（不在解释了）
+
+AOP注解
+
+**@Aspect**：表明当前类是一个切面类
+
+**@Pointcut("execution(* com.itheima.service.impl.*.*(..))")**：配置切入点表达式
+
+```java
+@Component(value = "log")
+@Aspect
+public class Logger {
+
+    @Pointcut(value = "execution(* com.wanglei.service.impl.*.*(..))")
+    public void getPoint(){}
+
+    public void printLog(){
+        System.out.println("打印日志");
+    }
+
+    @Before(value = "getPoint()")
+    public void printLog1(){
+        System.out.println("打印日志1");
+    }
+    @AfterReturning(value = "getPoint()")
+    public void printLog2(){
+        System.out.println("打印日志2");
+    }
+    @AfterThrowing(value = "getPoint()")
+    public void printLog3(){
+        System.out.println("打印日志3");
+
+    }
+    @After(value = "getPoint()")
+    public void printLog4(){
+        System.out.println("打印日志4");
+    }
+}
+```
+
+**（4）在main方法中测试**
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        ApplicationContext ac = new ClassPathXmlApplicationContext("bean.xml");
+        AccountService as = (AccountService) ac.getBean("accountService");
+        as.saveAcoount();
+    }
+}
+```
+
+## 5.Spring JDBCTemplate
+
+未完待续
